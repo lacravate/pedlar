@@ -90,11 +90,10 @@ h.day # => 3
 ```
 
 ### Class methods :
-In the example above :
-  `peddles Pathname` will set :
-    - pathname_accessor : getter / setter of a Pathname
-    - pathname_writer   : setter of a Pathname
-    - pathname_reader   : getter of a Pathname
+In the example above `peddles Pathname` will set :
+ - pathname_accessor : getter / setter of a Pathname
+ - pathname_writer   : setter of a Pathname
+ - pathname_reader   : getter of a Pathname
 
 If no alias is specified, class names will be downcased and '::' are replaced
 by '_'.
@@ -102,25 +101,29 @@ by '_'.
 ### Pedlar Delegations (class methods as well)
 Those delegations are there only to avoid a crash or bizarre behaviour in case
 delegate resource is not set.
-  `safe_delegator` set up one delegation with an optional alias
-  `safe_delegators` set up a number of delegations
+ - `safe_delegator` set up one delegation with an optional alias
+ - `safe_delegators` set up a number of delegations
 
 ### Instance methods :
 In the example above :
-  `pathname_accessor :humpty` will set :
+ - `pathname_accessor :humpty` will set :
     - a getter method : `h.humpty` will return @humpty value (classic)
     - a setter method : `h.humpty_with(args)` will set @humpty
       as Pathname.new(args)
     - a setter method : `h.humpty = a_value` will set @humpty to a_value
       if a_value is a Pathname
 
-  `pathname_writer :humpty` would have set only the setter methods
+ - `pathname_writer :humpty` would have set only the setter methods
 
-  `pathname_reader :humpty` would have set only the getter method
-```
+ - `pathname_reader :humpty` would have set only the getter method
 
-Copyright
----------
+ - `date_writer :bar` will set two setter methods :
+    - a setter method : `h.bar_with(args)` will set @humpty
+      with HasInterfaces method `bar_setter`
+    - a setter method : `h.bar = a_date` will set @bar to a_date
+      if a_date is a DateTime
+
+## Copyright
 
 I was tempted by the WTFPL, but i have to take time to read it.
 So far see LICENSE.
