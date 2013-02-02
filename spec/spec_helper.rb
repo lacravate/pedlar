@@ -28,7 +28,7 @@ class HasInterfaces
   date_writer :plip, :plap, :plop
 
   pathname_accessor :humpty, :dumpty
-  pathname_reader :pilou_pilou
+  pathname_reader :pilou_pilou, default: Pathname.new('pilou_pilou')
   pathname_writer :laurel, :hardy
 
   safe_delegator :@bim, :to_s, :to_string

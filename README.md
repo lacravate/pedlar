@@ -52,7 +52,8 @@ class HasInterfaces
   # DateTime accessors
   date_accessor :foo
   date_writer :bar
-  date_reader :baz
+  # with a default value assigned at reader first call if value is nil
+  date_reader :baz, default: DateTime.now
 
   # Pedlar delegations
   # returns nil if delegate is nil
@@ -116,6 +117,7 @@ In the example above :
  - `pathname_writer :humpty` would have set only the setter methods
 
  - `pathname_reader :humpty` would have set only the getter method
+   - attribute reader creator accepts a default as shown in the example above
 
  - `date_writer :bar` will set two setter methods :
     - a setter method : `h.bar_with(args)` will set @humpty

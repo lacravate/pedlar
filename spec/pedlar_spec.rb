@@ -41,6 +41,22 @@ describe HasInterfaces do
     subject.dumpty.dirname.should == Pathname.new('.')
   end
 
+  context "defaults" do
+    it "shouldn't have default value" do
+      subject.humpty.should be_nil
+    end
+
+    it "should have default value" do
+      subject.pilou_pilou.should == Pathname.new('pilou_pilou')
+    end
+
+    it "should not use the default value" do
+      subject.send :instance_variable_set, "@pilou_pilou", false
+      subject.pilou_pilou.should_not == Pathname.new('pilou_pilou')
+      subject.pilou_pilou.should == false
+    end
+  end
+
   context "DateTime interfaces with parameters" do
     it "should set @foo as a DateTime" do
       subject.foo_with 2001, 2, 3, 4, 5, 6
@@ -61,7 +77,7 @@ describe HasInterfaces do
       subject.foo.should == DateTime.new(2001, 2, 3, 4, 5, 6)
     end
 
-    it "should set @bar as a DateTime with set_bar method" do
+    it "should set @bar as a DateTime with fitting bar_setter method" do
       subject.bar_with 2001, 2, 3, 4, 5, 6
 
       subject.bar.should be_an_instance_of DateTime

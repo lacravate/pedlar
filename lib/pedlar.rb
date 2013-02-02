@@ -27,9 +27,13 @@ module Pedlar
         # Each of these three calls private methods (`type`) setting up
         # the actual accessor/mutator with user-defined name.
         define_singleton_method "#{as}_#{type}".to_sym do |*accessors|
+          default = nil
+          if accessors.size == 2 && accessors.last.is_a?(Hash)
+            default = accessors.pop[:default]
+          end
           # `accessors` below being the user-defined accessors names.
           accessors.each do |accessor|
-            send type, brand, accessor
+            send type, brand, accessor, default
           end
         end
       end
@@ -70,7 +74,7 @@ module Pedlar
   # defines two instance writer methods
   # - `accessor=`
   # - `accessor_with`
-  def writer(brand, accessor)
+  def writer(brand, accessor, default)
     # classic setter scheme, it does nothing if value
     # parameter is not a `brand` instance though
     define_method "#{accessor}=".to_sym do |value|
@@ -95,15 +99,18 @@ module Pedlar
   end
 
   # defines an instance reader method with `accessor` as its name
-  def reader(brand, accessor)
+  def reader(brand, accessor, default)
     define_method "#{accessor}".to_sym do
-      instance_variable_get "@#{accessor}"
+      instance_variable_get("@#{accessor}") || (
+        instance_variable_get("@#{accessor}").nil? &&
+        instance_variable_set("@#{accessor}", default)
+      )
     end
   end
 
   # defines reader and writer
-  def accessor(brand, accessor)
-    reader(brand, accessor) && writer(brand, accessor)
+  def accessor(*definitions)
+    reader(*definitions) && writer(*definitions)
   end
 
 end
