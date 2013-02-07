@@ -8,6 +8,8 @@ module Pedlar
   # Forwardable is available to the extending class
   include Forwardable
 
+  ACCESSOR_TYPES = %w|accessor writer reader|.freeze
+
   def peddles(*brands)
     # do we have a list of interface to setup
     # or one interface with an alias ?
@@ -17,25 +19,26 @@ module Pedlar
     # variables in a juicy DWIM way : depending on the arguments
     # we got, `brands` is either a flat list of classes
     # or a list of one list. But it's the same to my pal...
-    brands.each do |brand, as|
+    brands.each do |brand, dsl|
       # lousy lousy active_support neat methods mockery
-      as ||= brand.to_s.downcase.gsub('::', '_')
+      (dsl ||= {})[:as] ||= brand.to_s.downcase.gsub('::', '_')
 
       # three class methods per `brand` to setup accessors/mutators.
-      %w|accessor writer reader|.each do |type|
+      ACCESSOR_TYPES.each do |type|
         # ex: brand=Date defines `date_accessor`, `date_writer`, `date_reader`.
         # Each of these three calls private methods (`type`) setting up
         # the actual accessor/mutator with user-defined name.
-        define_singleton_method "#{as}_#{type}".to_sym do |*accessors|
-          default = nil
-          if accessors.size == 2 && accessors.last.is_a?(Hash)
-            default = accessors.pop[:default]
-          end
+        define_singleton_method "#{dsl[:as]}_#{type}".to_sym do |*accessors|
+          accessors = [accessors] if accessors.last.is_a?(Hash)
+
           # `accessors` below being the user-defined accessors names.
-          accessors.each do |accessor|
+          accessors.each do |accessor, options|
+            default = (options || {})[:default]
             send type, brand, accessor, default
           end
         end
+
+        send "#{dsl[:as]}_#{type}", *dsl[type.to_sym] if dsl[type.to_sym]
       end
     end
   end
@@ -102,8 +105,9 @@ module Pedlar
   def reader(brand, accessor, default)
     define_method "#{accessor}".to_sym do
       instance_variable_get("@#{accessor}") || (
+        default &&
         instance_variable_get("@#{accessor}").nil? &&
-        instance_variable_set("@#{accessor}", default)
+        instance_variable_set("@#{accessor}", default.dup)
       )
     end
   end

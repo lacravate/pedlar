@@ -18,14 +18,15 @@ class HasInterfaces
 
   extend Pedlar
 
+  peddles DateTime,
+    as: :date,
+    accessor: [:foo, :bar, [:blam, default: DateTime.now]],
+    reader:   [:baz],
+    writer:   [:plip, :plap, :plop]
+
   peddles Pathname, ERB
-  peddles DateTime, :date
 
   erb_writer :y_ankok
-
-  date_accessor :foo, :bar
-  date_reader :baz
-  date_writer :plip, :plap, :plop
 
   pathname_accessor :humpty, :dumpty
   pathname_reader :pilou_pilou, default: Pathname.new('pilou_pilou')
@@ -41,7 +42,7 @@ class HasInterfaces
 
   def test_methods
      %w|
-      foo= bar= foo bar baz plip= plap= plop=
+      foo= bar= foo bar baz plip= plap= plop= blam blam=
       humpty= dumpty= humpty dumpty pilou_pilou
       laurel= hardy= y_ankok=
     |

@@ -5,7 +5,7 @@ require 'spec_helper'
 describe HasInterfaces do
 
   it "should set all the expected methods" do
-    subject.test_methods.all? { |meth| subject.respond_to? meth }.should be_true
+    subject.test_methods.all? { |meth| puts meth unless subject.respond_to? meth; subject.respond_to? meth }.should be_true
   end
 
   it "should allow extending class to use Forwardable mechanics" do
@@ -48,6 +48,10 @@ describe HasInterfaces do
 
     it "should have default value" do
       subject.pilou_pilou.should == Pathname.new('pilou_pilou')
+    end
+
+    it "should have default value as specified in the dsl" do
+      subject.blam.should be_an_instance_of DateTime
     end
 
     it "should not use the default value" do
