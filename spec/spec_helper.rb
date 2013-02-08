@@ -29,7 +29,7 @@ class HasInterfaces
   erb_writer :y_ankok
 
   pathname_accessor :humpty, :dumpty
-  pathname_reader :pilou_pilou, default: Pathname.new('pilou_pilou')
+  pathname_reader :pilou_pilou, default: 'pilou_pilou'
   pathname_writer :laurel, :hardy
 
   safe_delegator :@bim, :to_s, :to_string

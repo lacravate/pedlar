@@ -8,9 +8,10 @@ module Pedlar
   # Forwardable is available to the extending class
   include Forwardable
 
-  ACCESSOR_TYPES = %w|accessor writer reader|.freeze
-
   def peddles(*brands)
+
+    include Pedlar::Peddles
+
     # do we have a list of interface to setup
     # or one interface with an alias ?
     brands = [brands] unless brands.all? { |brand| brand.is_a? Class }
@@ -24,7 +25,7 @@ module Pedlar
       (dsl ||= {})[:as] ||= brand.to_s.downcase.gsub('::', '_')
 
       # three class methods per `brand` to setup accessors/mutators.
-      ACCESSOR_TYPES.each do |type|
+      %w|accessor writer reader|.each do |type|
         # ex: brand=Date defines `date_accessor`, `date_writer`, `date_reader`.
         # Each of these three calls private methods (`type`) setting up
         # the actual accessor/mutator with user-defined name.
@@ -90,14 +91,7 @@ module Pedlar
     #  - or instance creation with passed params
     #  - or value that must a be an instance of `brand`
     define_method "#{accessor}_with".to_sym do |*values|
-      instance_variable_set "@#{accessor}",
-        if respond_to? "#{accessor}_setter", true
-          send "#{accessor}_setter", *values
-        elsif !values.first.is_a? brand
-          brand.new *values
-        else
-          values.first
-        end
+      instance_variable_set "@#{accessor}", peddles(accessor, brand, *values)
     end
   end
 
@@ -107,7 +101,7 @@ module Pedlar
       instance_variable_get("@#{accessor}") || (
         default &&
         instance_variable_get("@#{accessor}").nil? &&
-        instance_variable_set("@#{accessor}", default.dup)
+        peddles(accessor, brand, default.dup)
       )
     end
   end
@@ -115,6 +109,22 @@ module Pedlar
   # defines reader and writer
   def accessor(*definitions)
     reader(*definitions) && writer(*definitions)
+  end
+
+  module Peddles
+
+    private
+
+    def peddles(accessor, brand, *values)
+      if respond_to? "#{accessor}_setter", true
+        send "#{accessor}_setter", *values
+      elsif !values.first.is_a? brand
+        brand.new *values
+      else
+        values.first
+      end
+    end
+
   end
 
 end
