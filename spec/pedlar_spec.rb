@@ -28,7 +28,6 @@ describe HasInterfaces do
   end
 
   it "should set @dumpty as a Pathname" do
-    subject.dumpty.should be_nil
     # this should pass ! Make it pass !
     # subject.dumpty=('ploup').should be_nil
 
@@ -43,7 +42,7 @@ describe HasInterfaces do
 
   context "defaults" do
     it "shouldn't have default value" do
-      subject.humpty.should be_nil
+      subject.dumpty.should be_nil
     end
 
     it "should have default value" do
@@ -52,6 +51,10 @@ describe HasInterfaces do
 
     it "should have default value as specified in the dsl" do
       subject.blam.should be_an_instance_of DateTime
+    end
+
+    it "can have a Proc as default value" do
+      subject.humpty.should == Pathname.new('Humpty/dumpty')
     end
 
     it "should not use the default value" do

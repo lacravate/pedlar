@@ -101,7 +101,7 @@ module Pedlar
       instance_variable_get("@#{accessor}") || (
         default &&
         instance_variable_get("@#{accessor}").nil? &&
-        peddles(accessor, brand, default.dup)
+        peddles(accessor, brand, default_value(default))
       )
     end
   end
@@ -114,6 +114,10 @@ module Pedlar
   module Peddles
 
     private
+
+    def default_value(value)
+      value.is_a?(Proc) ? ->() { instance_eval &value }.call : value.dup
+    end
 
     def peddles(accessor, brand, *values)
       if respond_to? "#{accessor}_setter", true

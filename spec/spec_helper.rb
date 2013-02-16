@@ -28,7 +28,8 @@ class HasInterfaces
 
   erb_writer :y_ankok
 
-  pathname_accessor :humpty, :dumpty
+  pathname_accessor :humpty, default: Proc.new { to_humpty 'humpty/dumpty' }
+  pathname_accessor :dumpty
   pathname_reader :pilou_pilou, default: 'pilou_pilou'
   pathname_writer :laurel, :hardy
 
@@ -53,6 +54,10 @@ class HasInterfaces
   end
 
   private
+
+  def to_humpty(s)
+    s.capitalize
+  end
 
   # fitting setter method called by Pedlar
   def bar_setter(*args)
