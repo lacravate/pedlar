@@ -122,7 +122,7 @@ module Pedlar
     def peddles(accessor, brand, *values)
       if respond_to? "#{accessor}_setter", true
         send "#{accessor}_setter", *values
-      elsif !values.first.is_a? brand
+      elsif !values.first.instance_of? brand
         brand.new *values
       else
         values.first
