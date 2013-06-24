@@ -101,7 +101,7 @@ module Pedlar
       instance_variable_get("@#{accessor}") || (
         default &&
         instance_variable_get("@#{accessor}").nil? &&
-        peddles(accessor, brand, default_value(default))
+        instance_variable_set("@#{accessor}", peddles(accessor, brand, default_value(default)))
       )
     end
   end
