@@ -8,38 +8,25 @@ module Pedlar
   # Forwardable is available to the extending class
   include Forwardable
 
-  def peddles(*brands)
-
+  def peddles(brands, options=nil)
+    # wait till Pedlar::Peddles is defined to include it
     include Pedlar::Peddles
 
-    # do we have a list of interface to setup
-    # or one interface with an alias ?
-    brands = [brands] unless brands.all? { |brand| brand.is_a? Class }
+    brands = { brands => options } if options
 
-    # Ruby is too nice a pal... It accepts to assign iteration
-    # variables in a juicy DWIM way : depending on the arguments
-    # we got, `brands` is either a flat list of classes
-    # or a list of one list. But it's the same to my pal...
     brands.each do |brand, dsl|
-      # lousy lousy active_support neat methods mockery
-      (dsl ||= {})[:as] ||= brand.to_s.downcase.gsub('::', '_')
+      if type = (dsl.keys & %w|accessor writer reader|.map(&:to_sym)).first
+        dsl = { dsl.delete(type.to_sym) => dsl.merge(type: type) }
+      end
 
-      # three class methods per `brand` to setup accessors/mutators.
-      %w|accessor writer reader|.each do |type|
-        # ex: brand=Date defines `date_accessor`, `date_writer`, `date_reader`.
-        # Each of these three calls private methods (`type`) setting up
-        # the actual accessor/mutator with user-defined name.
-        define_singleton_method "#{dsl[:as]}_#{type}".to_sym do |*accessors|
-          accessors = [accessors] if accessors.last.is_a?(Hash)
-
-          # `accessors` below being the user-defined accessors names.
-          accessors.each do |accessor, options|
-            default = (options || {})[:default]
-            send type, brand, accessor, default
+      dsl.each do |name, options|
+        if options.is_a? Array
+          options.each do |actual|
+            define_accessor_for brand, actual.to_sym, name.to_s.chop
           end
+        else
+          define_accessor_for brand, name, options
         end
-
-        send "#{dsl[:as]}_#{type}", *dsl[type.to_sym] if dsl[type.to_sym]
       end
     end
   end
@@ -55,6 +42,16 @@ module Pedlar
   end
 
   private
+
+  def define_accessor_for(brand, name, options)
+    if options.is_a? Hash
+      type = options.delete :type
+    else
+      type, options = options, {}
+    end
+
+    send type, brand, name.to_sym, options[:default]
+  end
 
   # hand-made delegation
   # tests if delegate is not nil to avoid crash.

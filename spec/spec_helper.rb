@@ -18,20 +18,23 @@ class HasInterfaces
 
   extend Pedlar
 
+  peddles String, reader: :poopoo, default: "pidoo"
+
   peddles DateTime,
-    as: :date,
-    accessor: [:foo, :bar, [:blam, default: DateTime.now]],
-    reader:   [:baz],
-    writer:   [:plip, :plap, :plop]
+    accessors: %w|foo bar|,
+    blam: { type: :accessor, default: DateTime.now },
+    baz:  :reader,
+    writers: %w|plip plap plop|
 
-  peddles Pathname, ERB
-
-  erb_writer :y_ankok
-
-  pathname_accessor :humpty, default: Proc.new { to_humpty 'humpty/dumpty' }
-  pathname_accessor :dumpty
-  pathname_reader :pilou_pilou, default: 'pilou_pilou'
-  pathname_writer :laurel, :hardy
+  peddles ERB => {
+      y_ankok: :writer
+    },
+    Pathname =>  {
+      humpty: { type: :accessor, default: Proc.new { to_humpty 'humpty/dumpty' } },
+      dumpty: :accessor,
+      pilou_pilou: { type: :reader, default: 'pilou_pilou' },
+      writers: %w|laurel hardy|
+    }
 
   safe_delegator :@bim, :to_s, :to_string
   safe_delegators :@bim, :day, :month
@@ -45,7 +48,7 @@ class HasInterfaces
      %w|
       foo= bar= foo bar baz plip= plap= plop= blam blam=
       humpty= dumpty= humpty dumpty pilou_pilou
-      laurel= hardy= y_ankok=
+      laurel= hardy= y_ankok= poopoo
     |
   end
 

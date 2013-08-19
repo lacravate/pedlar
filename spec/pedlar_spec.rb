@@ -5,7 +5,7 @@ require 'spec_helper'
 describe HasInterfaces do
 
   it "should set all the expected methods" do
-    subject.test_methods.all? { |meth| puts meth unless subject.respond_to? meth; subject.respond_to? meth }.should be_true
+    subject.test_methods.all? { |meth| subject.respond_to? meth }.should be_true
   end
 
   it "should allow extending class to use Forwardable mechanics" do
@@ -38,6 +38,11 @@ describe HasInterfaces do
     subject.dumpty.should be_an_instance_of Pathname
     subject.dumpty.should == Pathname.new('ploup')
     subject.dumpty.dirname.should == Pathname.new('.')
+  end
+
+  it "should only set up a reader accessor for @poopoo" do
+     subject.respond_to?(:poopoo=).should be_false
+     subject.poopoo.should == 'pidoo'
   end
 
   context "defaults" do
