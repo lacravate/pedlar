@@ -1,10 +1,11 @@
 # Pedlar
 
 Pedlar is a very (very very) small utility that allows you to define
-getter / setter methods, more or less after the fashion of attr_accessor and
-friends do it.
+getter / setter methods as interfaces to helper objects for the class
+extending it.
 
-The resources thus exposed are instances of classes `Pedlar` `peddles`.
+The resources thus exposed are instances of classes `Pedlar` `peddles`. No more
+`initialize` method only to set a few helper objects.
 
 As well, with the precious help of Forwardable (from stdlib), `Pedlar` gives
 access to delegations and (provided by Pedlar) so-called safe delegations.
@@ -32,28 +33,39 @@ class HasInterfaces
 
   extend Pedlar
 
-  # gives access to getter / setter methods
-  # exposing resources as Pathname, Plop and
-  # Plap instances
-  peddles Pathname, Plip::Plop, Plip::Plap
+  # class of the object interfaced
+  # type of accessor : accessor, reader, writer
+  # options, here default value
+  # DSL for one interface
+  peddles String, reader: :poopoo, default: "pidoo"
 
-  pathname_accessor :humpty
-  pathname_reader :dumpty
+  # in one go, HasInterfaces instances will have DateTime
+  # objects accessed by, respectively :
+  peddles DateTime,
+    # foo and bar accessors
+    accessors: %w|foo bar|,
+    # blam accessor with DateTime.new as default
+    blam: { type: :accessor, default: DateTime.now },
+    # baz reader
+    baz:  :reader,
+    # plip, plap and plop writers
+    writers: %w|plip plap plop|
 
-  plip_plap_accessor :plap
-  plip_plop_reader :plop
-
-  # Same as above except an alias is specified.
-  # Will set for example 'date_accessor' instead 
-  # of 'datetime_accessor'.
-  # One class - alias couple at a time
-  peddles DateTime, :date
-
-  # DateTime accessors
-  date_accessor :foo
-  date_writer :bar
-  # with a default value assigned at reader first call if value is nil
-  date_reader :baz, default: DateTime.now
+  # in one go, definition for several classes
+  peddles ERB => {
+      # ERB y_ankok writer
+      y_ankok: :writer
+    },
+    Pathname =>  {
+      # accessor hympty defaulted to instance eval'ed Proc
+      humpty: { type: :accessor, default: Proc.new { to_humpty 'humpty/dumpty' } },
+      # accessor dumpty
+      dumpty: :accessor,
+      # reader pilou_pilou defaulting to pilou_pilou
+      pilou_pilou: { type: :reader, default: 'pilou_pilou' },
+      # writers laurel and hardy
+      writers: %w|laurel hardy|
+    }
 
   # Pedlar delegations
   # returns nil if delegate is nil
@@ -65,7 +77,7 @@ class HasInterfaces
 
   private
 
-  # fitting setter method called by Pedlar
+  # fitting setter method called by Pedlar for bar accessor
   def bar_setter(*args)
     args[0] -= 1
     DateTime.new *args
@@ -88,18 +100,12 @@ h.foo_with(2001, 2, 3, 4, 5, 6)
 # :day forwarded to @foo now
 h.day # => 3
 
+h.bar_with 2001, 2, 3, 4, 5, 6
+h.bar.year # => 2000 as Pedlar would have looked in `bar_setter`
+           # to instantiate the DateTime object interfaced by bar
 ```
 
-### Class methods :
-In the example above `peddles Pathname` will set :
- - pathname_accessor : getter / setter of a Pathname
- - pathname_writer   : setter of a Pathname
- - pathname_reader   : getter of a Pathname
-
-If no alias is specified, class names will be downcased and '::' are replaced
-by '_'.
-
-### Pedlar Delegations (class methods as well)
+### Pedlar Delegations
 Those delegations are there only to avoid a crash or bizarre behaviour in case
 delegate resource is not set.
  - `safe_delegator` set up one delegation with an optional alias
@@ -107,23 +113,16 @@ delegate resource is not set.
 
 ### Instance methods :
 In the example above :
- - `pathname_accessor :humpty` will set :
+ - `:humpty` definition will set :
     - a getter method : `h.humpty` will return @humpty value (classic)
     - a setter method : `h.humpty_with(args)` will set @humpty
       as Pathname.new(args)
     - a setter method : `h.humpty = a_value` will set @humpty to a_value
       if a_value is a Pathname
-
- - `pathname_writer :humpty` would have set only the setter methods
-
- - `pathname_reader :humpty` would have set only the getter method
-   - attribute reader creator accepts a default as shown in the example above
-
- - `date_writer :bar` will set two setter methods :
-    - a setter method : `h.bar_with(args)` will set @humpty
-      with HasInterfaces method `bar_setter`
-    - a setter method : `h.bar = a_date` will set @bar to a_date
-      if a_date is a DateTime
+ - `:bar` definition will set :
+    - same kind of things as bar except :
+      - a setter method : `h.humpty_with(args)` will set @humpty according to
+        what's found in the fitting `bar_setter` method
 
 ## Copyright
 

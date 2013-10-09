@@ -12,19 +12,29 @@ module Pedlar
     # wait till Pedlar::Peddles is defined to include it
     include Pedlar::Peddles
 
+    # options ? DSL for one accessor then
+    # let's make it appear as it was a hash'ed definition
     brands = { brands => options } if options
 
+    # each interface class
     brands.each do |brand, dsl|
+      # definition entry displays reserved word ?
+      # reformat definition then
       if type = (dsl.keys & %w|accessor writer reader|.map(&:to_sym)).first
         dsl = { dsl.delete(type.to_sym) => dsl.merge(type: type) }
       end
 
+      # each definition entry
       dsl.each do |name, options|
+        # group definiton made by reserved words
+        # readers, writers, accessors
+        # hence the `chop` to determine accessor type
         if options.is_a? Array
           options.each do |actual|
             define_accessor_for brand, actual.to_sym, name.to_s.chop
           end
         else
+          # single definition, possibly with options
           define_accessor_for brand, name, options
         end
       end
@@ -43,13 +53,20 @@ module Pedlar
 
   private
 
+  # last DSL routing before actual definition
   def define_accessor_for(brand, name, options)
     if options.is_a? Hash
       type = options.delete :type
     else
+      # options was not a hash, it means it was in fact
+      # the accessor type that was sent as a symbol
       type, options = options, {}
     end
 
+    # type : accessor, reader, writer
+    # brand : class interfaced
+    # name : user-defined accessor name
+    # default as the only accepted option so far
     send type, brand, name.to_sym, options[:default]
   end
 
@@ -95,6 +112,7 @@ module Pedlar
   # defines an instance reader method with `accessor` as its name
   def reader(brand, accessor, default)
     define_method "#{accessor}".to_sym do
+      # do we have it ? No, instantiate it if we have a default directive
       instance_variable_get("@#{accessor}") || (
         default &&
         instance_variable_get("@#{accessor}").nil? &&
@@ -117,8 +135,10 @@ module Pedlar
     end
 
     def peddles(accessor, brand, *values)
+      # fitting setter method ?
       if respond_to? "#{accessor}_setter", true
         send "#{accessor}_setter", *values
+      # not an instance of class interfaced ?
       elsif !values.first.instance_of? brand
         brand.new *values
       else
